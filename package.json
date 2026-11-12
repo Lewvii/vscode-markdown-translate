@@ -2,7 +2,7 @@
   "name": "markdown-preview-translate",
   "displayName": "MarkDown Preview Translate",
   "description": "Translate Markdown in VS Code's built-in preview with Google Translate or an OpenAI-compatible AI provider.",
-  "version": "0.5.1",
+  "version": "0.5.2",
   "publisher": "Roland",
   "license": "MIT",
   "engines": {
