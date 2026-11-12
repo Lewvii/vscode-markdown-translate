@@ -6,7 +6,7 @@ Translate English Markdown text in VS Code's built-in Markdown preview without c
 
 Use VS Code 1.95 or later. Install **MarkDown Preview Translate** from the Extensions view, or run **Extensions: Install from VSIX...** to install a downloaded `.vsix` file.
 
-If you used the earlier local **Translation Review** or **MarkDown Translate** extension, disable or uninstall it before enabling MarkDown Preview Translate. Existing `translationReview.*` user settings still apply. Run **MarkDown Preview Translate: Set API Key** to save your key again for the new extension identity.
+If you used the earlier local **Translation Review** or **MarkDown Translate** extension, disable or uninstall it before enabling MarkDown Preview Translate. Existing endpoint, model, and language settings still apply. Keys saved by earlier versions in SecretStorage are no longer read or migrated. Enter your key in **Translation Review: Api Key** in User Settings.
 
 ## Choose a translation source
 
@@ -15,7 +15,7 @@ If you used the earlier local **Translation Review** or **MarkDown Translate** e
 3. Click **Change translation source**.
 4. Select **AI Provider** or **Google Translate**.
 
-AI is selected by default. Changing the source does not overwrite your AI endpoint, model, or API key. The extension does not switch providers automatically when a request fails.
+AI is selected by default. Choosing **AI Provider** opens the extension's native User Settings so you can configure the endpoint, model, and API key together. The extension does not switch providers automatically when a request fails.
 
 ### Use Google Translate
 
@@ -25,22 +25,24 @@ This option sends text to Google's unofficial online translation endpoint. Avail
 
 ### Use an AI provider
 
-1. Open **Preferences: Open User Settings (JSON)**.
-2. Set the complete Chat Completions endpoint and a model supported by your provider:
+1. Run **MarkDown Preview Translate: Configure AI Provider**, or select **AI Provider** from the translation source picker.
+2. In User Settings, enter the complete Chat Completions **Endpoint**, **Model**, and **Api Key**. Leave the key blank if the service does not require authentication.
+
+You can also edit these values in **Preferences: Open User Settings (JSON)**:
 
    ```json
    {
      "translationReview.source": "ai",
      "translationReview.endpoint": "https://api.openai.com/v1/chat/completions",
      "translationReview.model": "gpt-4o-mini",
+     "translationReview.apiKey": "",
      "translationReview.targetLanguage": "zh-CN"
    }
    ```
 
-3. If your provider requires a key, run **MarkDown Preview Translate: Set API Key** from the Command Palette.
-4. Enter the key and confirm. To delete a saved key, run the command again, leave the field blank, and confirm.
+The API key is stored as plain text in your user settings, alongside the endpoint and model. Do not share or commit settings containing a key. Settings Sync may copy it to your other installations unless you exclude it. Update or clear the key when you change providers; keys are no longer stored separately per endpoint.
 
-Keys are stored in VS Code SecretStorage and associated with the configured endpoint. Google Translate does not use these keys. Remote endpoints require HTTPS; local loopback endpoints may use HTTP.
+Google Translate does not use the configured API key. Remote endpoints require HTTPS; local loopback endpoints may use HTTP.
 
 ## Choose a target language
 
@@ -69,7 +71,7 @@ For a dynamic preview, the extension may briefly open its source tab to identify
 
 ## Handle a failed or cancelled request
 
-Check the reported error, network connection, provider settings, and any service limits. For AI authentication errors, confirm the endpoint and save its API key again.
+Check the reported error, network connection, provider settings, and any service limits. For AI authentication errors, click **Configure AI Provider** in the error notification to open the same User Settings. Updating the API key invalidates cached translations. If automatic translation is enabled, return to the Markdown preview to translate with the updated configuration.
 
 To retry unfinished paragraphs, turn automatic translation off and on. The extension does not retry failed requests automatically and retains completed results when possible.
 

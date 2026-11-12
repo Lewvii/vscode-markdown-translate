@@ -10,7 +10,7 @@ const translationSources: readonly SourcePick[] = [
     source: "ai",
     label: "AI Provider",
     description: "ai · Use the configured API and model",
-    detail: "Keeps your existing endpoint, model, and API key settings.",
+    detail: "Open Settings to configure the endpoint, model, and API key together.",
   },
   {
     source: "google",
@@ -60,6 +60,8 @@ export function registerTranslationControls(context: vscode.ExtensionContext): v
       cancellation.cancel();
       cancellation.dispose();
     }),
+    vscode.commands.registerCommand("translationReview.configure", () =>
+      vscode.commands.executeCommand("workbench.action.openSettings", "translationReview")),
     vscode.commands.registerCommand("translationReview.selectSource", async () => {
       const configuration = vscode.workspace.getConfiguration("translationReview");
       const current = configuration.get<string>("source", "ai");
@@ -77,6 +79,9 @@ export function registerTranslationControls(context: vscode.ExtensionContext): v
       const latest = vscode.workspace.getConfiguration("translationReview");
       if (latest.get<string>("source", "ai") !== selected.source) {
         await latest.update("source", selected.source, vscode.ConfigurationTarget.Global);
+      }
+      if (selected.source === "ai" && !cancellation.token.isCancellationRequested) {
+        await vscode.commands.executeCommand("translationReview.configure");
       }
     }),
     vscode.commands.registerCommand("translationReview.selectTargetLanguage", async () => {

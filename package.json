@@ -56,8 +56,8 @@
         "icon": "$(eye)"
       },
       {
-        "command": "translationReview.setApiKey",
-        "title": "MarkDown Preview Translate: Set API Key"
+        "command": "translationReview.configure",
+        "title": "MarkDown Preview Translate: Configure AI Provider"
       },
       {
         "command": "translationReview.selectSource",
@@ -110,6 +110,12 @@
           "default": "gpt-4o-mini",
           "scope": "application",
           "description": "Model name accepted by your translation provider."
+        },
+        "translationReview.apiKey": {
+          "type": "string",
+          "default": "",
+          "scope": "application",
+          "description": "API key for the configured AI endpoint. Stored as plain text in your user settings, not in secure storage. Update or clear it when changing providers. Leave blank for services that do not require a key. Google Translate does not use this value."
         },
         "translationReview.targetLanguage": {
           "type": "string",

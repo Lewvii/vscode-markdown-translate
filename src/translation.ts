@@ -8,6 +8,13 @@ export type TranslationSettings = {
   targetLanguage: string;
 };
 
+export class TranslationAuthenticationError extends Error {
+  constructor() {
+    super("Access to the translation service was denied. Check the API key and permissions for this endpoint.");
+    this.name = "TranslationAuthenticationError";
+  }
+}
+
 export function normalizeEndpoint(endpoint: string): string {
   const value = endpoint.trim();
   const invalid = "Set a complete HTTPS translation endpoint URL. HTTP is allowed only for local services. The URL must not contain credentials, query parameters, or fragments.";
@@ -77,7 +84,7 @@ export async function translateBatch(segments: readonly TranslationSegment[], se
     }
     if (!response.ok) {
       controller.abort();
-      if (response.status === 401 || response.status === 403) throw new Error("Access to the translation service was denied. Check the API key and permissions for this endpoint.");
+      if (response.status === 401 || response.status === 403) throw new TranslationAuthenticationError();
       if (response.status === 429) throw new Error("The translation service rate limit or quota was exceeded. Try again manually later.");
       throw new Error(`The translation service returned HTTP ${response.status}. Check the service configuration.`);
     }

@@ -3,6 +3,8 @@
 ## Unreleased
 
 - Publish version tags through GitHub Actions with Marketplace OIDC authentication, after version validation, type checking, and tests.
+- Configure the AI endpoint, model, and API key together in native User Settings, opened from AI Provider selection and authentication errors.
+- Replace SecretStorage and the separate Set API Key command with the plain-text, user-level translationReview.apiKey setting. Previously saved secrets are not read or migrated.
 
 ## 0.5.0
 

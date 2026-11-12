@@ -1,13 +1,13 @@
-import { createHash } from "node:crypto";
-
 import type MarkdownIt from "markdown-it";
 import * as vscode from "vscode";
 
 import { extendMarkdownIt, type Paragraph } from "./paragraphs";
-import { normalizeEndpoint, type TranslationSettings } from "./translation";
+import { TranslationAuthenticationError, type TranslationSettings } from "./translation";
 import { translateSegments } from "./translationBatches";
 import { translateFreeSegments } from "./freeTranslation";
 import { registerTranslationControls } from "./translationControls";
+
+type TranslationConfiguration = TranslationSettings & { apiKey: string };
 
 type SourceState = {
   document: vscode.TextDocument;
@@ -19,7 +19,7 @@ type SourceState = {
 type TranslationRequest = {
   document: vscode.TextDocument;
   version: number;
-  settings: TranslationSettings;
+  settings: TranslationConfiguration;
   source: "ai" | "google";
   controller: AbortController;
 };
@@ -33,49 +33,18 @@ type NativePreview = {
 
 type MarkdownExtension = { extendMarkdownIt(md: MarkdownIt): MarkdownIt };
 
-function readSettings(): TranslationSettings {
+function readSettings(): TranslationConfiguration {
   const configuration = vscode.workspace.getConfiguration("translationReview");
   const endpoint = configuration.inspect<string>("endpoint");
   const model = configuration.inspect<string>("model");
   const targetLanguage = configuration.inspect<string>("targetLanguage");
+  const apiKey = configuration.inspect<string>("apiKey");
   return {
     endpoint: endpoint?.globalValue ?? endpoint?.defaultValue ?? "",
     model: model?.globalValue ?? model?.defaultValue ?? "",
     targetLanguage: targetLanguage?.globalValue ?? targetLanguage?.defaultValue ?? "",
+    apiKey: (apiKey?.globalValue ?? apiKey?.defaultValue ?? "").trim(),
   };
-}
-
-function secretName(endpoint: string): string {
-  return `translationReview.apiKey.${createHash("sha256").update(normalizeEndpoint(endpoint)).digest("hex")}`;
-}
-
-async function setApiKey(secrets: vscode.SecretStorage): Promise<void> {
-  let endpoint: string;
-  try {
-    endpoint = normalizeEndpoint(readSettings().endpoint);
-  } catch {
-    await vscode.window.showErrorMessage("Set a valid endpoint in the MarkDown Preview Translate settings first.");
-    return;
-  }
-  const value = await vscode.window.showInputBox({
-    title: "MarkDown Preview Translate: Set API Key",
-    prompt: `Used only for ${endpoint}. Leave blank and confirm to delete the API key for this endpoint.`,
-    password: true,
-    ignoreFocusOut: true,
-  });
-  if (value === undefined) {
-    return;
-  }
-  try {
-    const name = secretName(endpoint);
-    if (value.trim()) {
-      await secrets.store(name, value.trim());
-    } else {
-      await secrets.delete(name);
-    }
-  } catch {
-    await vscode.window.showErrorMessage("Could not update the API key. Please try again.");
-  }
 }
 
 function previewExists(preview: NativePreview): boolean {
@@ -381,17 +350,6 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
           if (!paragraphs.length) {
             return;
           }
-          let apiKey = "";
-          if (current.source === "ai") {
-            try {
-              apiKey = await context.secrets.get(secretName(current.settings.endpoint)) ?? "";
-            } catch {
-              throw new Error("Could not read the API key. Set it again and retry.");
-            }
-          }
-          if (!isCurrent(current) || sources.get(uri) !== source) {
-            return;
-          }
           const total = paragraphs.length;
           let completed = 0;
           progress.report({ message: `0 / ${total}` });
@@ -408,7 +366,7 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
           if (current.source === "google") {
             await translateFreeSegments(paragraphs, current.settings.targetLanguage, controller.signal, publish);
           } else {
-            await translateSegments(paragraphs, current.settings, apiKey, controller.signal, publish);
+            await translateSegments(paragraphs, current.settings, current.settings.apiKey, controller.signal, publish);
           }
           if (isCurrent(current) && sources.get(uri) === source) {
             void vscode.window.showInformationMessage(`Translation complete. Translated ${total} paragraphs.`);
@@ -421,7 +379,16 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
       if (!disposed && !controller.signal.aborted && (!request || isCurrent(request))) {
         const completed = request ? sources.get(request.document.uri.toString())?.translations.size ?? 0 : 0;
         const message = error instanceof Error ? error.message : "Translation failed. Please try again.";
-        await vscode.window.showErrorMessage(completed ? `${message} Kept translations for ${completed} completed paragraphs.` : message);
+        const detail = completed ? `${message} Kept translations for ${completed} completed paragraphs.` : message;
+        if (error instanceof TranslationAuthenticationError && request?.source === "ai") {
+          void vscode.window.showErrorMessage(detail, "Configure AI Provider").then(async (action) => {
+            if (action === "Configure AI Provider" && !disposed) {
+              await vscode.commands.executeCommand("translationReview.configure");
+            }
+          });
+        } else {
+          await vscode.window.showErrorMessage(detail);
+        }
       }
     } finally {
       if (routes.get(tab) === controller) {
@@ -460,7 +427,6 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
     vscode.commands.registerCommand("translationReview.disableAutomatic", toggleTranslation),
     vscode.window.tabGroups.onDidChangeTabs(observePreview),
     vscode.window.tabGroups.onDidChangeTabGroups(observePreview),
-    vscode.commands.registerCommand("translationReview.setApiKey", () => setApiKey(context.secrets)),
     vscode.workspace.onDidChangeTextDocument((event) => {
       const uri = event.document.uri.toString();
       const source = sources.get(uri);
@@ -475,17 +441,8 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
       invalidate(document.uri.toString());
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration("translationReview.source") || event.affectsConfiguration("translationReview.endpoint") || event.affectsConfiguration("translationReview.model") || event.affectsConfiguration("translationReview.targetLanguage")) {
+      if (event.affectsConfiguration("translationReview")) {
         invalidateAll();
-      }
-    }),
-    context.secrets.onDidChange((event) => {
-      try {
-        if (event.key === secretName(readSettings().endpoint)) {
-          invalidateAll();
-        }
-      } catch {
-        return;
       }
     }),
     new vscode.Disposable(() => {

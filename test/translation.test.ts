@@ -2,7 +2,7 @@ import assert from "node:assert/strict";
 import { once } from "node:events";
 import { createServer, type RequestListener } from "node:http";
 import test, { type TestContext } from "node:test";
-import { normalizeEndpoint, translateBatch, type TranslationSegment, type TranslationSettings } from "../src/translation";
+import { normalizeEndpoint, translateBatch, TranslationAuthenticationError, type TranslationSegment, type TranslationSettings } from "../src/translation";
 
 async function serve(t: TestContext, handler: RequestListener): Promise<string> {
   const server = createServer((request, response) => {
@@ -200,6 +200,7 @@ for (const status of [401, 403, 429, 500]) {
     });
     await assert.rejects(translateBatch(source, { ...settings, endpoint }, secret, new AbortController().signal), error => {
       assert(error instanceof Error);
+      assert.equal(error instanceof TranslationAuthenticationError, status === 401 || status === 403);
       assert.match(error.message, status === 401 || status === 403 ? /denied/i : status === 429 ? /quota/i : /HTTP 500/);
       assert(!error.message.includes(secret));
       assert(!error.message.includes(endpoint));
