@@ -1,0 +1,98 @@
+{
+  "name": "markdown-translate",
+  "displayName": "MarkDown Translate",
+  "description": "Translate Markdown in VS Code's built-in preview with Google Translate or an OpenAI-compatible AI provider.",
+  "version": "0.5.0",
+  "publisher": "Roland",
+  "license": "MIT",
+  "engines": { "vscode": "^1.95.0" },
+  "categories": ["Other"],
+  "keywords": ["markdown", "translation", "translate", "preview", "bilingual", "ai"],
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Lewvii/vscode-markdown-translate.git"
+  },
+  "homepage": "https://github.com/Lewvii/vscode-markdown-translate#readme",
+  "bugs": {
+    "url": "https://github.com/Lewvii/vscode-markdown-translate/issues"
+  },
+  "extensionKind": ["workspace"],
+  "main": "./dist/extension.js",
+  "activationEvents": ["onLanguage:markdown"],
+  "capabilities": { "untrustedWorkspaces": { "supported": false } },
+  "contributes": {
+    "markdown.markdownItPlugins": true,
+    "markdown.previewStyles": ["./media/translation.css"],
+    "commands": [
+      { "command": "translationReview.translate", "title": "MarkDown Translate: Enable Automatic Translation", "icon": "$(globe)" },
+      { "command": "translationReview.disableAutomatic", "title": "MarkDown Translate: Disable Automatic Translation (Enabled)", "icon": "$(eye)" },
+      { "command": "translationReview.setApiKey", "title": "MarkDown Translate: Set API Key" },
+      { "command": "translationReview.selectSource", "title": "MarkDown Translate: Select Translation Source" },
+      { "command": "translationReview.selectTargetLanguage", "title": "MarkDown Translate: Select Target Language" }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "translationReview.translate",
+          "when": "(activeWebviewPanelId == 'markdown.preview' || activeCustomEditorId == 'vscode.markdown.preview.editor') && !activeCustomEditorTextDiff && !translationReview.automatic",
+          "group": "navigation@1"
+        },
+        {
+          "command": "translationReview.disableAutomatic",
+          "when": "(activeWebviewPanelId == 'markdown.preview' || activeCustomEditorId == 'vscode.markdown.preview.editor') && !activeCustomEditorTextDiff && translationReview.automatic",
+          "group": "navigation@1"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "MarkDown Translate",
+      "properties": {
+        "translationReview.source": {
+          "type": "string",
+          "enum": ["ai", "google"],
+          "enumDescriptions": ["Use your configured OpenAI-compatible AI endpoint and model.", "Use Google's free unofficial online translation service without an API key. Text is sent to Google; availability and limits are not guaranteed."],
+          "default": "ai",
+          "scope": "application",
+          "description": "Translation provider. Changing it clears existing translations. No automatic provider fallback."
+        },
+        "translationReview.endpoint": {
+          "type": "string",
+          "default": "https://api.openai.com/v1/chat/completions",
+          "scope": "application",
+          "description": "Complete OpenAI-compatible Chat Completions URL. While automatic translation is enabled, prose from the active native Markdown preview is sent to this endpoint."
+        },
+        "translationReview.model": {
+          "type": "string",
+          "default": "gpt-4o-mini",
+          "scope": "application",
+          "description": "Model name accepted by your translation provider."
+        },
+        "translationReview.targetLanguage": {
+          "type": "string",
+          "default": "zh-CN",
+          "scope": "application",
+          "description": "Target language name or code. Use MarkDown Translate: Select Target Language for Google-compatible language codes; AI also accepts custom language names."
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run build",
+    "build": "node esbuild.mjs --production",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc -p tsconfig.json --noEmit",
+    "test": "tsx --test test/*.test.ts",
+    "package": "vsce package"
+  },
+  "dependencies": { "parse5": "^7.3.0" },
+  "devDependencies": {
+    "markdown-it": "^14.1.0",
+    "@types/markdown-it": "^14.1.2",
+    "@types/node": "^20.11.0",
+    "@types/vscode": "~1.95.0",
+    "@vscode/vsce": "^3.7.1",
+    "esbuild": "^0.24.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

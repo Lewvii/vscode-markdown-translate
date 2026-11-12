@@ -1,0 +1,9 @@
+.translation-review-translation {
+  display: block;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
+
+.translation-review-translation.translation-review-inline {
+  display: inline;
+}
