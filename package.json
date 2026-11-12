@@ -5,9 +5,20 @@
   "version": "0.5.0",
   "publisher": "Roland",
   "license": "MIT",
-  "engines": { "vscode": "^1.95.0" },
-  "categories": ["Other"],
-  "keywords": ["markdown", "translation", "translate", "preview", "bilingual", "ai"],
+  "engines": {
+    "vscode": "^1.95.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "keywords": [
+    "markdown",
+    "translation",
+    "translate",
+    "preview",
+    "bilingual",
+    "ai"
+  ],
   "repository": {
     "type": "git",
     "url": "https://github.com/Lewvii/vscode-markdown-translate.git"
@@ -16,19 +27,46 @@
   "bugs": {
     "url": "https://github.com/Lewvii/vscode-markdown-translate/issues"
   },
-  "extensionKind": ["workspace"],
+  "extensionKind": [
+    "workspace"
+  ],
   "main": "./dist/extension.js",
-  "activationEvents": ["onLanguage:markdown"],
-  "capabilities": { "untrustedWorkspaces": { "supported": false } },
+  "activationEvents": [
+    "onLanguage:markdown"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": false
+    }
+  },
   "contributes": {
     "markdown.markdownItPlugins": true,
-    "markdown.previewStyles": ["./media/translation.css"],
+    "markdown.previewStyles": [
+      "./media/translation.css"
+    ],
     "commands": [
-      { "command": "translationReview.translate", "title": "MarkDown Preview Translate: Enable Automatic Translation", "icon": "$(globe)" },
-      { "command": "translationReview.disableAutomatic", "title": "MarkDown Preview Translate: Disable Automatic Translation (Enabled)", "icon": "$(eye)" },
-      { "command": "translationReview.setApiKey", "title": "MarkDown Preview Translate: Set API Key" },
-      { "command": "translationReview.selectSource", "title": "MarkDown Preview Translate: Select Translation Source" },
-      { "command": "translationReview.selectTargetLanguage", "title": "MarkDown Preview Translate: Select Target Language" }
+      {
+        "command": "translationReview.translate",
+        "title": "MarkDown Preview Translate: Enable Automatic Translation",
+        "icon": "$(globe)"
+      },
+      {
+        "command": "translationReview.disableAutomatic",
+        "title": "MarkDown Preview Translate: Disable Automatic Translation (Enabled)",
+        "icon": "$(eye)"
+      },
+      {
+        "command": "translationReview.setApiKey",
+        "title": "MarkDown Preview Translate: Set API Key"
+      },
+      {
+        "command": "translationReview.selectSource",
+        "title": "MarkDown Preview Translate: Select Translation Source"
+      },
+      {
+        "command": "translationReview.selectTargetLanguage",
+        "title": "MarkDown Preview Translate: Select Target Language"
+      }
     ],
     "menus": {
       "editor/title": [
@@ -49,8 +87,14 @@
       "properties": {
         "translationReview.source": {
           "type": "string",
-          "enum": ["ai", "google"],
-          "enumDescriptions": ["Use your configured OpenAI-compatible AI endpoint and model.", "Use Google's free unofficial online translation service without an API key. Text is sent to Google; availability and limits are not guaranteed."],
+          "enum": [
+            "ai",
+            "google"
+          ],
+          "enumDescriptions": [
+            "Use your configured OpenAI-compatible AI endpoint and model.",
+            "Use Google's free unofficial online translation service without an API key. Text is sent to Google; availability and limits are not guaranteed."
+          ],
           "default": "ai",
           "scope": "application",
           "description": "Translation provider. Changing it clears existing translations. No automatic provider fallback."
@@ -84,14 +128,16 @@
     "test": "tsx --test test/*.test.ts",
     "package": "vsce package"
   },
-  "dependencies": { "parse5": "^7.3.0" },
+  "dependencies": {
+    "parse5": "^7.3.0"
+  },
   "devDependencies": {
-    "markdown-it": "^14.1.0",
     "@types/markdown-it": "^14.1.2",
     "@types/node": "^20.11.0",
     "@types/vscode": "~1.95.0",
-    "@vscode/vsce": "^3.7.1",
+    "@vscode/vsce": "^4.1.0",
     "esbuild": "^0.24.0",
+    "markdown-it": "^14.1.0",
     "tsx": "^4.19.0",
     "typescript": "^5.6.0"
   }

@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+
+- Publish version tags through GitHub Actions with Marketplace OIDC authentication, after version validation, type checking, and tests.
+
 ## 0.5.0
 
 - Rename the extension to MarkDown Preview Translate and prepare the Roland.markdown-preview-translate package for the VS Code Marketplace.
