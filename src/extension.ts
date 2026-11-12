@@ -54,11 +54,11 @@ async function setApiKey(secrets: vscode.SecretStorage): Promise<void> {
   try {
     endpoint = normalizeEndpoint(readSettings().endpoint);
   } catch {
-    await vscode.window.showErrorMessage("Set a valid endpoint in the MarkDown Translate settings first.");
+    await vscode.window.showErrorMessage("Set a valid endpoint in the MarkDown Preview Translate settings first.");
     return;
   }
   const value = await vscode.window.showInputBox({
-    title: "MarkDown Translate: Set API Key",
+    title: "MarkDown Preview Translate: Set API Key",
     prompt: `Used only for ${endpoint}. Leave blank and confirm to delete the API key for this endpoint.`,
     password: true,
     ignoreFocusOut: true,

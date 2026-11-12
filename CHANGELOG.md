@@ -2,7 +2,7 @@
 
 ## 0.5.0
 
-- Rename the extension to MarkDown Translate and prepare the Roland.markdown-translate package for the VS Code Marketplace.
+- Rename the extension to MarkDown Preview Translate and prepare the Roland.markdown-preview-translate package for the VS Code Marketplace.
 - Use English for commands, status-bar tooltips, language names, prompts, progress notifications, and error messages.
 - Replace the README with an English usage guide.
 - Keep existing setting and command identifiers, target-language aliases, and translation behavior.

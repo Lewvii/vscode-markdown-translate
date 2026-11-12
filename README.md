@@ -1,12 +1,12 @@
-# MarkDown Translate
+# MarkDown Preview Translate
 
 Translate English Markdown text in VS Code's built-in Markdown preview without changing the source file. Use Google Translate or an OpenAI-compatible AI provider.
 
 ## Install
 
-Use VS Code 1.95 or later. Install **MarkDown Translate** from the Extensions view, or run **Extensions: Install from VSIX...** to install a downloaded `.vsix` file.
+Use VS Code 1.95 or later. Install **MarkDown Preview Translate** from the Extensions view, or run **Extensions: Install from VSIX...** to install a downloaded `.vsix` file.
 
-If you used the earlier local **Translation Review** extension, disable or uninstall it before enabling MarkDown Translate. Existing `translationReview.*` user settings still apply. Run **MarkDown Translate: Set API Key** to save your key again for the new extension identity.
+If you used the earlier local **Translation Review** or **MarkDown Translate** extension, disable or uninstall it before enabling MarkDown Preview Translate. Existing `translationReview.*` user settings still apply. Run **MarkDown Preview Translate: Set API Key** to save your key again for the new extension identity.
 
 ## Choose a translation source
 
@@ -37,14 +37,14 @@ This option sends text to Google's unofficial online translation endpoint. Avail
    }
    ```
 
-3. If your provider requires a key, run **MarkDown Translate: Set API Key** from the Command Palette.
+3. If your provider requires a key, run **MarkDown Preview Translate: Set API Key** from the Command Palette.
 4. Enter the key and confirm. To delete a saved key, run the command again, leave the field blank, and confirm.
 
 Keys are stored in VS Code SecretStorage and associated with the configured endpoint. Google Translate does not use these keys. Remote endpoints require HTTPS; local loopback endpoints may use HTTP.
 
 ## Choose a target language
 
-Click the language name in the status bar, or run **MarkDown Translate: Select Target Language**. Search by language name or code, then select a language.
+Click the language name in the status bar, or run **MarkDown Preview Translate: Select Target Language**. Search by language name or code, then select a language.
 
 The default target is **Chinese (Simplified)** (`zh-CN`). Language choices and provider settings are saved at the user level. AI providers also accept a **Custom language** name; Google Translate requires a supported language from the list.
 

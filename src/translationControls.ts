@@ -23,7 +23,7 @@ const translationSources: readonly SourcePick[] = [
 export function registerTranslationControls(context: vscode.ExtensionContext): void {
   const languageStatus = vscode.window.createStatusBarItem("translationReview.targetLanguage", vscode.StatusBarAlignment.Right, 100);
   const cancellation = new vscode.CancellationTokenSource();
-  languageStatus.name = "MarkDown Translate target language";
+  languageStatus.name = "MarkDown Preview Translate target language";
   languageStatus.command = "translationReview.selectTargetLanguage";
 
   const refresh = (): void => {

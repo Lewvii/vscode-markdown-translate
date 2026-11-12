@@ -1,6 +1,6 @@
 {
-  "name": "markdown-translate",
-  "displayName": "MarkDown Translate",
+  "name": "markdown-preview-translate",
+  "displayName": "MarkDown Preview Translate",
   "description": "Translate Markdown in VS Code's built-in preview with Google Translate or an OpenAI-compatible AI provider.",
   "version": "0.5.0",
   "publisher": "Roland",
@@ -24,11 +24,11 @@
     "markdown.markdownItPlugins": true,
     "markdown.previewStyles": ["./media/translation.css"],
     "commands": [
-      { "command": "translationReview.translate", "title": "MarkDown Translate: Enable Automatic Translation", "icon": "$(globe)" },
-      { "command": "translationReview.disableAutomatic", "title": "MarkDown Translate: Disable Automatic Translation (Enabled)", "icon": "$(eye)" },
-      { "command": "translationReview.setApiKey", "title": "MarkDown Translate: Set API Key" },
-      { "command": "translationReview.selectSource", "title": "MarkDown Translate: Select Translation Source" },
-      { "command": "translationReview.selectTargetLanguage", "title": "MarkDown Translate: Select Target Language" }
+      { "command": "translationReview.translate", "title": "MarkDown Preview Translate: Enable Automatic Translation", "icon": "$(globe)" },
+      { "command": "translationReview.disableAutomatic", "title": "MarkDown Preview Translate: Disable Automatic Translation (Enabled)", "icon": "$(eye)" },
+      { "command": "translationReview.setApiKey", "title": "MarkDown Preview Translate: Set API Key" },
+      { "command": "translationReview.selectSource", "title": "MarkDown Preview Translate: Select Translation Source" },
+      { "command": "translationReview.selectTargetLanguage", "title": "MarkDown Preview Translate: Select Target Language" }
     ],
     "menus": {
       "editor/title": [
@@ -45,7 +45,7 @@
       ]
     },
     "configuration": {
-      "title": "MarkDown Translate",
+      "title": "MarkDown Preview Translate",
       "properties": {
         "translationReview.source": {
           "type": "string",
@@ -71,7 +71,7 @@
           "type": "string",
           "default": "zh-CN",
           "scope": "application",
-          "description": "Target language name or code. Use MarkDown Translate: Select Target Language for Google-compatible language codes; AI also accepts custom language names."
+          "description": "Target language name or code. Use MarkDown Preview Translate: Select Target Language for Google-compatible language codes; AI also accepts custom language names."
         }
       }
     }
