@@ -27,12 +27,13 @@ test("decodes entities without treating escaped plain values as HTML", () => {
 test("translates nested list leaves inside their own li and skips object YAML", () => {
   const html = table("<tr><th>topics</th><td><ul><li>First topic</li><li><ul><li>Nested topic</li><li><code>name: Private object</code></li><li><ul><li>Deep topic</li></ul></li></ul></li><li>42</li><li>中文</li><li></li></ul></td></tr>");
   const captured = captureFrontMatter(html, "lists");
-  assert.deepEqual(captured.paragraphs.map(paragraph => paragraph.text), ["topics", "First topic", "Nested topic", "Deep topic"]);
+  assert.deepEqual(captured.paragraphs.map(paragraph => paragraph.text), ["topics", "First topic", "Nested topic", "Deep topic", "中文"]);
   const translations = new Map(captured.paragraphs.filter(paragraph => paragraph.text !== "topics").map(paragraph => [paragraph.id, `译文 ${paragraph.text}`]));
   const expected = html
     .replace("First topic</li>", 'First topic <span class="translation-review-translation translation-review-inline">译文 First topic</span></li>')
     .replace("Nested topic</li>", 'Nested topic <span class="translation-review-translation translation-review-inline">译文 Nested topic</span></li>')
-    .replace("Deep topic</li>", 'Deep topic <span class="translation-review-translation translation-review-inline">译文 Deep topic</span></li>');
+    .replace("Deep topic</li>", 'Deep topic <span class="translation-review-translation translation-review-inline">译文 Deep topic</span></li>')
+    .replace("中文</li>", '中文 <span class="translation-review-translation translation-review-inline">译文 中文</span></li>');
   assert.equal(captured.render(translations), expected);
 });
 
@@ -46,6 +47,33 @@ test("preserves native bytes, attributes, and CSS when results are absent or unr
   const value = captured.paragraphs.find(paragraph => paragraph.text === "Native & original");
   assert.ok(value);
   assert.equal(captured.render(new Map([[value.id, "原文"]])), html.replace("</TD>", ' <span class="translation-review-translation translation-review-inline">原文</span></TD>'));
+});
+
+test("keeps only native frontmatter HTML for echoed keys, values and nested list leaves", () => {
+  const html = table("<tr><th>标题</th><td> HTTP \t API 配置 </td></tr><tr><th>主题</th><td><ul><li>配置参数</li><li><ul><li>R&amp;D 指南</li></ul></li></ul></td></tr>");
+  const captured = captureFrontMatter(html, "echoes");
+  assert.deepEqual(captured.paragraphs.map(paragraph => paragraph.text), ["标题", "HTTP \t API 配置", "主题", "配置参数", "R&D 指南"]);
+  for (const whitespace of [false, true]) {
+    const completed = new Map(captured.paragraphs.map(paragraph => [
+      paragraph.id,
+      whitespace ? ` \n${paragraph.text.replace(/\s+/g, " ")}\r\n ` : paragraph.text,
+    ]));
+    const before = [...completed];
+    assert.equal(captured.render(completed), html);
+    assert.equal(captured.render(completed), html);
+    assert.deepEqual([...completed], before);
+    const title = captured.paragraphs.find(paragraph => paragraph.text === "标题");
+    assert.ok(title);
+    completed.set(title.id, "Title");
+    assert.equal(captured.render(completed), html.replace("标题</th>", '标题 <span class="translation-review-translation translation-review-inline">Title</span></th>'));
+  }
+});
+
+test("renders frontmatter changes in case and punctuation rather than treating them as echoes", () => {
+  const html = table("<tr><th>API</th><td>配置。</td></tr>");
+  const captured = captureFrontMatter(html, "changed");
+  const translations = new Map(captured.paragraphs.map(paragraph => [paragraph.id, paragraph.text === "API" ? "api" : "配置！"]));
+  assert.equal(captured.render(translations), table('<tr><th>API <span class="translation-review-translation translation-review-inline">api</span></th><td>配置。 <span class="translation-review-translation translation-review-inline">配置！</span></td></tr>'));
 });
 
 test("does not mutate captured originals or accumulate translations between renders", () => {
@@ -147,7 +175,7 @@ test("leaves hide, codeBlock, error, non-native HTML, and empty table output unt
     '<table><tbody><tr><th>title</th><td>Ordinary HTML table</td></tr></tbody></table>',
     '<div><table class="frontmatter"><tbody><tr><th>title</th><td>Nested raw HTML</td></tr></tbody></table></div>',
     table(""),
-    table("<tr><th></th><td></td></tr><tr><th>中文</th><td>12345</td></tr>"),
+    table("<tr><th></th><td></td></tr><tr><th>123</th><td>12345</td></tr>"),
   ]) {
     const captured = captureFrontMatter(html, "unchanged");
     assert.deepEqual(captured.paragraphs, []);

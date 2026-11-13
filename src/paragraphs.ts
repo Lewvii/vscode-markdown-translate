@@ -2,7 +2,7 @@ import type MarkdownIt from "markdown-it";
 import type { RenderRule } from "markdown-it/lib/renderer.mjs";
 import Token from "markdown-it/lib/token.mjs";
 import { captureFrontMatter, type FrontMatterCapture } from "./frontmatter";
-import { shouldInlineTranslation } from "./translationLayout";
+import { isUnchangedTranslation, shouldInlineTranslation } from "./translationLayout";
 
 export type Paragraph = { id: string; text: string; markers: readonly string[]; formatting: string };
 
@@ -92,9 +92,7 @@ function inlineProse(md: MarkdownIt, children: readonly Token[], htmlTags: strin
 
 function worthTranslating(text: string): boolean {
   const prose = text.replace(/⟦(?:INLINE_CODE|FORMAT)_\d+⟧/g, "");
-  const words = prose.match(/[A-Za-z]+/g);
-  if (!words) return false;
-  return !/\p{Script=Han}/u.test(prose) || words.some(word => /[a-z]{2}/.test(word));
+  return /\p{L}/u.test(prose);
 }
 
 export function preservesFormatting(markers: readonly string[], translation: string): boolean {
@@ -218,7 +216,7 @@ export function extendMarkdownIt(md: MarkdownIt, lookup: (uri: string, paragraph
         const insertions = new Map<number, { html: string; inside: boolean }>();
         for (const block of blocks) {
           const translation = translations?.get(block.paragraph.id);
-          if (!translation?.trim()) continue;
+          if (!translation?.trim() || isUnchangedTranslation(block.paragraph.text, translation)) continue;
           const htmlText = renderTranslation(md, translation, block, options, env);
           if (htmlText === undefined) continue;
           if (shouldInlineTranslation(block.paragraph.text, translation) && !block.protectedTokens.some(token => token.type === "code_inline" || token.type === "hardbreak" || token.type === "softbreak")) {

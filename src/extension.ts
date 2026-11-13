@@ -6,6 +6,7 @@ import { TranslationAuthenticationError, type TranslationSettings } from "./tran
 import { translateSegments } from "./translationBatches";
 import { translateFreeSegments } from "./freeTranslation";
 import { registerTranslationControls } from "./translationControls";
+import { findTargetLanguageTexts } from "./languageDetection.mjs";
 
 type TranslationConfiguration = TranslationSettings & { apiKey: string };
 
@@ -348,7 +349,9 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
           lastResolvedSource = source;
           if (session.attempted.has(source)) return;
           session.attempted.add(source);
-          const paragraphs = source.paragraphs.filter((paragraph) => !source.translations.has(paragraph.id));
+          const targetLanguageTexts = findTargetLanguageTexts(source.paragraphs.map(paragraph => paragraph.text), current.settings.targetLanguage);
+          const paragraphs = source.paragraphs.filter((paragraph) =>
+            !source.translations.has(paragraph.id) && !targetLanguageTexts.has(paragraph.text));
           if (!paragraphs.length) {
             return;
           }
@@ -407,8 +410,8 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
       automatic = undefined;
       clearTimeout(automaticTimer);
       automaticPending = false;
-      for (const controller of routes.values()) controller.abort();
-      for (const request of requests.values()) request.controller.abort();
+      invalidateAll();
+      lastResolvedSource = undefined;
       await vscode.commands.executeCommand("setContext", "translationReview.automatic", false);
       return;
     }

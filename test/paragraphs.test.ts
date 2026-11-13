@@ -104,6 +104,54 @@ test("delegates native rendering byte for byte when there are no results", () =>
   assert.deepEqual(captured.map(paragraph => paragraph.text), ["Native heading"]);
 });
 
+for (const { name, source, count } of [
+  { name: "heading", source: "# 架构", count: 1 },
+  { name: "body", source: "通过 HTTP API 配置控制器。", count: 1 },
+  { name: "list", source: "- 配置参数\n- 启动服务", count: 2 },
+  { name: "table", source: "| 参数 | 说明 |\n| --- | --- |\n| HTTP | 服务端口 |", count: 4 },
+  { name: "emphasis", source: "阅读 **重要** 的 *配置*。", count: 1 },
+  { name: "inline code", source: "运行 `npm install` 命令。", count: 1 },
+  { name: "link", source: "阅读 [配置指南](./guide.md)。", count: 1 },
+]) {
+  test(`keeps only native ${name} HTML for cached echoed translations`, () => {
+    for (const whitespace of [false, true]) {
+      const md = new MarkdownIt();
+      const native = md.render(source);
+      const completed = new Map<string, string>();
+      extendMarkdownIt(md, (_uri, paragraphs) => {
+        if (!completed.size) {
+          for (const paragraph of paragraphs) {
+            completed.set(paragraph.id, whitespace ? ` \n${paragraph.text.replace(/ /g, "\t  ")}\r\n ` : paragraph.text);
+          }
+        }
+        return completed;
+      });
+      const env = { currentDocument: sourceUri() };
+      assert.equal(md.render(source, env), native);
+      assert.equal(completed.size, count);
+      const before = [...completed];
+      assert.equal(md.render(source, env), native);
+      assert.deepEqual([...completed], before);
+    }
+  });
+}
+
+test("renders changed translations beside echoed blocks without folding case, punctuation or formatting", () => {
+  for (const { source, translation, expected } of [
+    { source: "HTTP API", translation: "http API", expected: "http API" },
+    { source: "配置。", translation: "配置！", expected: "配置！" },
+    { source: "**Read** guide", translation: "Read ⟦FORMAT_0⟧guide⟦FORMAT_1⟧", expected: "Read <strong>guide</strong>" },
+    { source: "Use `x` now", translation: "Use now ⟦INLINE_CODE_0⟧", expected: "Use now <code>x</code>" },
+    { source: "[Read](./guide.md) guide", translation: "Read ⟦FORMAT_0⟧guide⟦FORMAT_1⟧", expected: 'Read <a href="./guide.md">guide</a>' },
+  ]) {
+    const md = new MarkdownIt();
+    extendMarkdownIt(md, (_uri, paragraphs) => new Map(paragraphs.map(paragraph => [paragraph.id, paragraph.text === "架构" ? paragraph.text : translation])));
+    const html = md.render(`# 架构\n\n${source}`, { currentDocument: sourceUri() });
+    assert.deepEqual(elements(parseFragment(html), "h1").map(textContent), ["架构"]);
+    assert.deepEqual(translatedElements(html).map(node => serialize(node)), [expected]);
+  }
+});
+
 test("captures the render document rather than the parse environment or cached tokens", () => {
   const md = new MarkdownIt({ html: true });
   const calls: string[] = [];
@@ -380,15 +428,16 @@ test("escapes model HTML and preserves model Markdown as inert text", () => {
   assert.doesNotMatch(html, /<script>|<strong>/);
 });
 
-test("ignores Chinese paragraphs containing only acronyms but includes genuine English prose", () => {
+test("captures prose in every script so target-language detection can decide what to skip", () => {
   const md = new MarkdownIt({ html: true });
   let captured: readonly Paragraph[] = [];
   extendMarkdownIt(md, (_uri, paragraphs) => {
     captured = paragraphs;
     return undefined;
   });
-  md.render("这是已经翻译好的中文段落，使用 API、HTTP 和 SVG。\n\n已经翻译的 iOS 文档。\n\n中文和 English prose mixed together.\n\nAPI", { currentDocument: sourceUri() });
-  assert.deepEqual(captured.map(paragraph => paragraph.text), ["中文和 English prose mixed together.", "API"]);
+  const paragraphs = ["这是一个中文文档。", "日本語の説明です。", "한국어 설명입니다.", "Это русский текст.", "这是中文段落，使用 API 和 SVG。", "中文和 English prose mixed together.", "API"];
+  md.render([...paragraphs, "12345", "`protectedCode`"].join("\n\n"), { currentDocument: sourceUri() });
+  assert.deepEqual(captured.map(paragraph => paragraph.text), paragraphs);
 });
 
 test("reference links retain destinations and titles while autolinks stay local", () => {
@@ -664,6 +713,33 @@ test("captures late native frontmatter rendering together with prose in one snap
   const hidden = md.renderer.render(tokens, md.options, env);
   assert.doesNotMatch(hidden, /English title|English description|frontmatter/);
   assert.deepEqual(snapshots[2].map(paragraph => paragraph.text), ["Ordinary prose."]);
+});
+
+test("suppresses native frontmatter echoes while rendering changed prose and validating markers", () => {
+  const md = new MarkdownIt();
+  const frontHtml = '<table class="frontmatter"><tbody><tr><th>标题</th><td>HTTP API 配置</td></tr></tbody></table>\n';
+  md.renderer.rules.front_matter = () => frontHtml;
+  const completed = new Map<string, string>();
+  extendMarkdownIt(md, (_uri, paragraphs) => {
+    if (!completed.size) {
+      for (const paragraph of paragraphs) {
+        completed.set(paragraph.id, paragraph.text === "Read guide." ? "阅读指南。" : paragraph.text);
+      }
+    }
+    return completed;
+  });
+  const tokens = [new Token("front_matter", "", 0), ...md.parse("Read guide.", {})];
+  const env = { currentDocument: sourceUri() };
+  const expected = frontHtml + '<p>Read guide. <span class="translation-review-translation translation-review-inline">阅读指南。</span></p>\n';
+  assert.equal(md.renderer.render(tokens, md.options, env), expected);
+  assert.equal(completed.size, 3);
+  const before = [...completed];
+  assert.equal(md.renderer.render(tokens, md.options, env), expected);
+  assert.deepEqual([...completed], before);
+  for (const [id, text] of completed) {
+    if (text === "标题") completed.set(id, "Title ⟦FORMAT_0⟧");
+  }
+  assert.equal(md.renderer.render(tokens, md.options, env), expected);
 });
 
 test("frontmatter code, errors and missing translation results preserve native output", () => {

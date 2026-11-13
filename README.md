@@ -1,6 +1,6 @@
 # MarkDown Preview Translate
 
-Translate English Markdown text in VS Code's built-in Markdown preview without changing the source file. Use Google Translate or an OpenAI-compatible AI provider.
+Translate Markdown text in VS Code's built-in Markdown preview without changing the source file. Use Google Translate or an OpenAI-compatible AI provider.
 
 ## Install
 
@@ -46,7 +46,7 @@ Google Translate does not use the configured API key. Remote endpoints require H
 
 ## Choose a target language
 
-Click the language name in the status bar, or run **MarkDown Preview Translate: Select Target Language**. Search by language name or code, then select a language.
+Click the language name in the status bar, or run **MarkDown Preview Translate: Select Target Language**. Each row shows only the English language name. Search by that name, then select a language.
 
 The default target is **Chinese (Simplified)** (`zh-CN`). Language choices and provider settings are saved at the user level. AI providers also accept a **Custom language** name; Google Translate requires a supported language from the list.
 
@@ -61,11 +61,15 @@ In User Settings, **Translation Review: Automatic** (`translationReview.automati
 
 While enabled, opening a Markdown preview sends its text to the selected provider. Configure your AI provider or select Google Translate before opening a preview. Editing the current document or changing provider or target-language settings clears outdated translations and translates the current preview again.
 
-Disabling cancels unfinished requests and keeps completed translations visible. Returning to a document with cached translations does not resend completed paragraphs. Translations are kept in memory and are lost when the window reloads.
+Disabling cancels unfinished requests, clears cached translations for all documents in the window, and refreshes previews to show only the original Markdown. Late responses cannot restore cleared translations. Enabling translation again translates the current preview afresh. While enabled, returning to a document with cached translations does not resend completed paragraphs. Translations are kept in memory and are lost when the window reloads.
 
 ## Read translated content
 
 Short translations appear beside the original text. Longer translations appear below it. Headings, lists, tables, emphasis, and links retain their formatting and link targets.
+
+Before contacting either provider, the extension detects each paragraph's dominant language locally. For every supported detection language, it skips text confidently matching the target, even with embedded commands or product names. When detection is uncertain, predominantly non-Latin prose is checked without embedded Latin terms. Reliable paragraphs provide document context for ambiguous text with a compatible writing system, including short headings. Context is used only when reliable target-language paragraphs account for more than half of the document's analyzed words, counted with Unicode word segmentation. It never overrides a reliably identified foreign language. Protected formatting markers and dotted identifiers such as filenames are excluded from detection. Simplified and Traditional Chinese are checked separately. Text without enough evidence, unsupported detection languages, and custom target names still go through translation. Detection is heuristic; short words shared by related languages can remain ambiguous.
+
+Translations identical to the original after whitespace normalization are not displayed. This applies to headings, paragraphs, lists, tables, and native frontmatter. Completed results remain cached, so suppressing a duplicate does not trigger another request.
 
 Images, diagrams, code blocks, and inline code stay in the native preview. Code and image content are not sent for translation. Paragraphs containing inline math are left unchanged. Translation processes document text, not just the visible screen.
 

@@ -9,6 +9,11 @@
 - Render toolbar eyes as opaque SVG paths traced from the original artwork, with separate light-theme and dark-theme colors. Keep the double-eye extension icon unchanged.
 - Enable automatic translation by default when a window starts. Opening a Markdown preview translates through the selected provider without a toggle click; manual disabling lasts until the window reloads.
 - Add the user-level `translationReview.automatic` checkbox, checked by default, to choose the automatic translation state at window startup. Changing it requires a window reload; the eye button remains a session-only toggle.
+- Skip paragraphs locally when their dominant language confidently matches the target, for both AI and Google translation. Apply the same rule across detection languages, allowing embedded foreign terms without script restrictions. Keep uncertain text eligible for translation, distinguish Simplified and Traditional Chinese, and leave skipped paragraphs unchanged.
+- Clear cached translations and restore original Markdown previews when translation is disabled. Cancel unfinished requests and translate afresh when enabled again.
+- Show only English language names in the target-language picker, without codes or alias descriptions.
+- Use reliable document language context for ambiguous headings and technical prose, without overriding reliably detected foreign languages or required Simplified/Traditional Chinese conversions.
+- Suppress unchanged translations consistently across Markdown and native frontmatter while retaining completed results in the cache.
 
 ## 0.5.0
 

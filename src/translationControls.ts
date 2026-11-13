@@ -92,23 +92,17 @@ export function registerTranslationControls(context: vscode.ExtensionContext): v
       const languages: LanguagePick[] = translationLanguages.map((language) => ({
         code: language.code,
         label: language.label,
-        description: language.code,
-        detail: language.aliases.join(" · "),
         picked: language.code === currentLanguage?.code,
       }));
       if (configuration.get<string>("source", "ai") === "ai") {
         languages.push({
           code: customLanguageCode,
           label: "Custom language",
-          description: "AI only",
-          detail: "Enter any target language name. Google Translate supports only the standard codes above.",
         });
       }
       const selected = await vscode.window.showQuickPick(languages, {
         title: "Select target language",
-        placeHolder: `Search by language name or code. Current language: ${currentLanguage?.label ?? current}`,
-        matchOnDescription: true,
-        matchOnDetail: true,
+        placeHolder: `Search by English language name. Current language: ${currentLanguage?.label ?? current}`,
       }, cancellation.token);
       if (!selected || cancellation.token.isCancellationRequested) return;
       let value = selected.code;

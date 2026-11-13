@@ -1,5 +1,5 @@
 import { parseFragment, type DefaultTreeAdapterTypes } from "parse5";
-import { shouldInlineTranslation } from "./translationLayout";
+import { isUnchangedTranslation, shouldInlineTranslation } from "./translationLayout";
 
 export type FrontMatterParagraph = { id: string; text: string };
 export type FrontMatterCapture = { paragraphs: readonly FrontMatterParagraph[]; render(translations: ReadonlyMap<string, string>): string };
@@ -49,7 +49,7 @@ function collectValue(element: Element, prefix: string, paragraphs: CapturedPara
 
   const sourceText = text;
   text = text.trim();
-  if (/[A-Za-z]/.test(text)) {
+  if (/\p{L}/u.test(text)) {
     paragraphs.push({ paragraph: { id: `${prefix}:${location.startOffset}`, text }, sourceText, offset: location.endTag.startOffset });
   }
   return true;
@@ -91,7 +91,7 @@ export function captureFrontMatter(html: string, prefix: string): FrontMatterCap
       let cursor = 0;
       for (const item of captured) {
         const translation = translations.get(item.paragraph.id);
-        if (!translation?.trim()) continue;
+        if (!translation?.trim() || isUnchangedTranslation(item.paragraph.text, translation)) continue;
         const escaped = translation.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;").replace(/\r\n?|\n/g, "<br>");
         const translated = shouldInlineTranslation(item.sourceText, translation)
           ? ` <span class="translation-review-translation translation-review-inline">${escaped}</span>`
