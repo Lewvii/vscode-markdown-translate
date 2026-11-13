@@ -160,7 +160,9 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
   const routes = new Map<vscode.Tab, AbortController>();
   const rendered = new vscode.EventEmitter<string>();
   let disposed = false;
-  let automatic: { attempted: WeakSet<SourceState> } | undefined = { attempted: new WeakSet<SourceState>() };
+  const automaticSetting = vscode.workspace.getConfiguration("translationReview").inspect<boolean>("automatic");
+  let automatic: { attempted: WeakSet<SourceState> } | undefined =
+    (automaticSetting?.globalValue ?? automaticSetting?.defaultValue ?? true) ? { attempted: new WeakSet<SourceState>() } : undefined;
   let automaticTimer: NodeJS.Timeout | undefined;
   let automaticPending = false;
   let lastResolvedSource: SourceState | undefined;
@@ -441,7 +443,7 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
       invalidate(document.uri.toString());
     }),
     vscode.workspace.onDidChangeConfiguration((event) => {
-      if (event.affectsConfiguration("translationReview")) {
+      if (["source", "endpoint", "model", "apiKey", "targetLanguage"].some((key) => event.affectsConfiguration(`translationReview.${key}`))) {
         invalidateAll();
       }
     }),

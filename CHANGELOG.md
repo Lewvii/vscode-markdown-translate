@@ -8,6 +8,7 @@
 - Use a transparent double-eye extension icon with the left blue eye mirrored toward the right red eye. Keep single-eye toolbar icons blue while disabled and red while enabled, with increased opacity and unchanged detail.
 - Render toolbar eyes as opaque SVG paths traced from the original artwork, with separate light-theme and dark-theme colors. Keep the double-eye extension icon unchanged.
 - Enable automatic translation by default when a window starts. Opening a Markdown preview translates through the selected provider without a toggle click; manual disabling lasts until the window reloads.
+- Add the user-level `translationReview.automatic` checkbox, checked by default, to choose the automatic translation state at window startup. Changing it requires a window reload; the eye button remains a session-only toggle.
 
 ## 0.5.0
 

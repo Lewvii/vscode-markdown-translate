@@ -92,6 +92,12 @@
     "configuration": {
       "title": "MarkDown Preview Translate",
       "properties": {
+        "translationReview.automatic": {
+          "type": "boolean",
+          "default": true,
+          "scope": "application",
+          "description": "Enable automatic translation when a window starts. Reload the window after changing this setting. The eye button changes only the current session. While enabled, Markdown preview text is sent to the selected translation provider."
+        },
         "translationReview.source": {
           "type": "string",
           "enum": [

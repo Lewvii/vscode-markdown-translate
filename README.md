@@ -53,11 +53,13 @@ The default target is **Chinese (Simplified)** (`zh-CN`). Language choices and p
 ## Start and stop automatic translation
 
 1. Open a Markdown file and run **Markdown: Open Preview**, or choose the built-in **Markdown Preview** editor.
-2. Automatic translation starts without clicking the eye icon. The **red eye** indicates that it is enabled.
+2. By default, automatic translation starts without clicking the eye icon. The **red eye** indicates that it is enabled.
 3. Follow Markdown links as usual. The active preview continues translating after navigation.
 4. Click the **red eye** to disable automatic translation. Click the **blue eye** to enable it again.
 
-Automatic translation is on when a window starts, including after installation or window reload. Opening a Markdown preview sends its text to the selected provider. Configure your AI provider or select Google Translate before opening a preview. Disabling stays in effect for the current window session. While enabled, editing the current document or changing translation settings clears outdated translations and translates the current preview again.
+In User Settings, **Translation Review: Automatic** (`translationReview.automatic`) controls whether automatic translation starts enabled. The checkbox is checked by default. Reload the window after changing it. The eye button changes only the current session and does not change this setting.
+
+While enabled, opening a Markdown preview sends its text to the selected provider. Configure your AI provider or select Google Translate before opening a preview. Editing the current document or changing provider or target-language settings clears outdated translations and translates the current preview again.
 
 Disabling cancels unfinished requests and keeps completed translations visible. Returning to a document with cached translations does not resend completed paragraphs. Translations are kept in memory and are lost when the window reloads.
 
