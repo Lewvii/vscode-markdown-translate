@@ -2,9 +2,10 @@
   "name": "markdown-preview-translate",
   "displayName": "MarkDown Preview Translate",
   "description": "Translate Markdown in VS Code's built-in preview with Google Translate or an OpenAI-compatible AI provider.",
-  "version": "0.5.2",
+  "version": "0.5.4",
   "publisher": "Roland",
   "license": "MIT",
+  "icon": "media/icon.png",
   "engines": {
     "vscode": "^1.95.0"
   },
@@ -48,12 +49,18 @@
       {
         "command": "translationReview.translate",
         "title": "MarkDown Preview Translate: Enable Automatic Translation",
-        "icon": "$(globe)"
+        "icon": {
+          "light": "media/eye-blue-light.svg",
+          "dark": "media/eye-blue-dark.svg"
+        }
       },
       {
         "command": "translationReview.disableAutomatic",
         "title": "MarkDown Preview Translate: Disable Automatic Translation (Enabled)",
-        "icon": "$(eye)"
+        "icon": {
+          "light": "media/eye-red-light.svg",
+          "dark": "media/eye-red-dark.svg"
+        }
       },
       {
         "command": "translationReview.configure",

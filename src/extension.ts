@@ -160,7 +160,7 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
   const routes = new Map<vscode.Tab, AbortController>();
   const rendered = new vscode.EventEmitter<string>();
   let disposed = false;
-  let automatic: { attempted: WeakSet<SourceState> } | undefined;
+  let automatic: { attempted: WeakSet<SourceState> } | undefined = { attempted: new WeakSet<SourceState>() };
   let automaticTimer: NodeJS.Timeout | undefined;
   let automaticPending = false;
   let lastResolvedSource: SourceState | undefined;
@@ -419,7 +419,7 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
     await vscode.commands.executeCommand("setContext", "translationReview.automatic", true);
     if (automatic === session) await translate(value);
   };
-  void vscode.commands.executeCommand("setContext", "translationReview.automatic", false);
+  void vscode.commands.executeCommand("setContext", "translationReview.automatic", automatic !== undefined);
 
   context.subscriptions.push(
     rendered,
@@ -454,5 +454,6 @@ export function activate(context: vscode.ExtensionContext): MarkdownExtension {
       routes.clear();
     }),
   );
+  scheduleAutomatic();
   return { extendMarkdownIt: (md: MarkdownIt): MarkdownIt => extendMarkdownIt(md, lookup) };
 }
